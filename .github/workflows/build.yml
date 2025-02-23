@@ -44,14 +44,21 @@ jobs:
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platform-tools" "platforms;android-31" "build-tools;33.0.2"
 
-      # ✅ إصلاح مسار SDK Manager
-      - name: Fix SDK Manager Path
+      # ✅ إصلاح مسار SDK Manager داخل Buildozer
+      - name: Fix SDK Manager Path for Buildozer
         run: |
           mkdir -p ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin
           ln -sf $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager
           echo "Fixed SDK Manager path."
-          
-      # ✅ التحقق من تثبيت `sdkmanager` بشكل صحيح
+
+      # ✅ إصلاح مسار Build-Tools داخل Buildozer
+      - name: Fix Build-Tools Path
+        run: |
+          mkdir -p ~/.buildozer/android/platform/android-sdk/build-tools/33.0.2
+          ln -sf $ANDROID_HOME/build-tools/33.0.2/aidl ~/.buildozer/android/platform/android-sdk/build-tools/33.0.2/aidl
+          echo "Fixed Build-Tools path."
+
+      # ✅ التحقق من `sdkmanager`
       - name: Verify SDK Manager
         run: |
           if [ ! -f "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
@@ -71,4 +78,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: KivyMD-App
-          path: bin/*.apk
+          path: project-1/bin/*.apk
