@@ -57,7 +57,6 @@ jobs:
       # ✅ تشغيل Buildozer لإنشاء ملف APK
       - name: Build APK
         run: |
-          cd project-1  # ← تأكد من أنك داخل مجلد المشروع
           buildozer -v android debug
 
       # ✅ رفع ملف APK كـ Artifact
