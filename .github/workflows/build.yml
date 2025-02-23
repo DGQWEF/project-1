@@ -43,9 +43,16 @@ jobs:
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platform-tools" "platforms;android-31" "build-tools;33.0.2"
 
-          # إصلاح المسار لـ AIDL
-          mkdir -p $ANDROID_HOME/build-tools/33.0.2
-          ln -s $ANDROID_HOME/cmdline-tools/latest/bin/aidl $ANDROID_HOME/build-tools/33.0.2/aidl
+          # التأكد من أن AIDL يعمل
+          if [ -f "$ANDROID_HOME/build-tools/33.0.2/aidl" ]; then
+            echo "AIDL exists ✅"
+          else
+            echo "AIDL not found, manually fixing it..."
+            ln -sf $ANDROID_HOME/cmdline-tools/latest/bin/aidl $ANDROID_HOME/build-tools/33.0.2/aidl
+          fi
+
+          # طباعة مسارات Build-Tools للتأكد
+          ls -la $ANDROID_HOME/build-tools/33.0.2/
 
       # تشغيل Buildozer لإنشاء ملف APK
       - name: Build APK
