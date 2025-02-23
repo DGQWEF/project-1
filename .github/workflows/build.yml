@@ -32,7 +32,7 @@ jobs:
       - name: Install Android SDK and build-tools
         run: |
           export ANDROID_HOME=$HOME/.android/sdk
-          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools/33.0.2:$PATH
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
           
           mkdir -p $ANDROID_HOME/cmdline-tools
           cd $ANDROID_HOME/cmdline-tools
@@ -43,28 +43,25 @@ jobs:
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platform-tools" "platforms;android-31" "build-tools;33.0.2"
 
-          # التأكد من أن AIDL يعمل
-          if [ -f "$ANDROID_HOME/build-tools/33.0.2/aidl" ]; then
-            echo "AIDL exists ✅"
-          else
-            echo "AIDL not found, manually fixing it..."
-            ln -sf $ANDROID_HOME/cmdline-tools/latest/bin/aidl $ANDROID_HOME/build-tools/33.0.2/aidl
-          fi
-
-          # طباعة مسارات Build-Tools للتأكد
-          ls -la $ANDROID_HOME/build-tools/33.0.2/
-
-      # تشغيل Buildozer لإنشاء ملف APK
-      - name: Build APK
+      # ✅ إصلاح مشكلة AIDL
+      - name: Fix AIDL Path
         run: |
           export ANDROID_HOME=$HOME/.android/sdk
-          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools/33.0.2:$PATH
+          export BUILD_TOOLS_VERSION=33.0.2
+          mkdir -p $ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION
+          ln -sf $ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/aidl $ANDROID_HOME/platform-tools/aidl
+          export PATH=$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
+
+      # ✅ الانتقال إلى مجلد `project-1` ثم تشغيل Buildozer
+      - name: Build APK
+        run: |
+          cd project-1  # ← تأكد من الانتقال للمسار الصحيح
+          export ANDROID_HOME=$HOME/.android/sdk
           buildozer -v android debug
 
-
-      # رفع ملف APK كـ Artifact
+      # ✅ رفع ملف APK الناتج
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: KivyMD-App
-          path: bin/*.apk
+          path: project-1/bin/*.apk
