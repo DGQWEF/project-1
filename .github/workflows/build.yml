@@ -52,10 +52,9 @@ jobs:
           ln -sf $ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/aidl $ANDROID_HOME/platform-tools/aidl
           export PATH=$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
 
-      # ✅ الانتقال إلى مجلد `project-1` ثم تشغيل Buildozer
+      # ✅ تشغيل Buildozer مباشرة (دون `cd project-1`)
       - name: Build APK
         run: |
-          cd project-1  # ← تأكد من الانتقال للمسار الصحيح
           export ANDROID_HOME=$HOME/.android/sdk
           buildozer -v android debug
 
@@ -64,4 +63,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: KivyMD-App
-          path: project-1/bin/*.apk
+          path: bin/*.apk
