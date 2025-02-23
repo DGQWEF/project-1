@@ -41,7 +41,10 @@ jobs:
           unzip sdk-tools.zip
           mv cmdline-tools latest
           
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+          # ✅ قبول جميع الرخص تلقائيًا
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
+          # ✅ تثبيت SDK الصحيح (تجنب 36-rc5)
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platform-tools" "platforms;android-31" "build-tools;$BUILD_TOOLS_VERSION"
 
       # ✅ إصلاح مشكلة AIDL
