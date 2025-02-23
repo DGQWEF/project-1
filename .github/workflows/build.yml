@@ -32,6 +32,7 @@ jobs:
       - name: Install Android SDK and build-tools
         run: |
           export ANDROID_HOME=$HOME/.android/sdk
+          export BUILD_TOOLS_VERSION=33.0.2
           export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
           
           mkdir -p $ANDROID_HOME/cmdline-tools
@@ -41,25 +42,31 @@ jobs:
           mv cmdline-tools latest
           
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platform-tools" "platforms;android-31" "build-tools;33.0.2"
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platform-tools" "platforms;android-31" "build-tools;$BUILD_TOOLS_VERSION"
 
       # ✅ إصلاح مشكلة AIDL
       - name: Fix AIDL Path
         run: |
           export ANDROID_HOME=$HOME/.android/sdk
           export BUILD_TOOLS_VERSION=33.0.2
-          mkdir -p $ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION
-          ln -sf $ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/aidl $ANDROID_HOME/platform-tools/aidl
+          
+          # تأكد من وجود AIDL في build-tools
+          if [ -f "$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/aidl" ]; then
+            echo "AIDL already exists"
+          else
+            ln -sf $ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/aidl $ANDROID_HOME/platform-tools/aidl
+          fi
+
+          # إضافة build-tools إلى المسار
           export PATH=$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
 
-      # ✅ تشغيل Buildozer مباشرة (دون `cd project-1`)
+      # تشغيل Buildozer لإنشاء ملف APK
       - name: Build APK
         run: |
-          sudo apt-get install aidl
           export ANDROID_HOME=$HOME/.android/sdk
           buildozer -v android debug
 
-      # ✅ رفع ملف APK الناتج
+      # رفع ملف APK كـ Artifact
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
