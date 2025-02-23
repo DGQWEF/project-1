@@ -1,23 +1,24 @@
-name: CI
+name: Build KivyMD APK
+
 on:
   push:
     branches: [ main ]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v3
 
+      # تثبيت الأدوات المطلوبة
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y python3 python3-pip python3-venv openjdk-17-jdk unzip wget
-          pip install --upgrade pip
-          pip install buildozer cython
+          sudo apt install -y python3-pip openjdk-17-jdk unzip wget
 
+      # تثبيت Android SDK و Build-Tools مع القبول التلقائي للتراخيص
       - name: Install Android SDK and build-tools
         run: |
           mkdir -p $HOME/.android/sdk/cmdline-tools
@@ -27,17 +28,29 @@ jobs:
           mv cmdline-tools latest
           export ANDROID_HOME=$HOME/.android/sdk
           export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platform-tools" "platforms;android-31" "build-tools;31.0.0"
 
+          # قبول التراخيص وتثبيت الأدوات المطلوبة
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platform-tools" "platforms;android-31" "build-tools;33.0.2"
+
+          # تأكيد التثبيت
+          ls -la $ANDROID_HOME/build-tools/
+
+      # تثبيت Buildozer و Cython
+      - name: Install Buildozer
+        run: |
+          pip3 install --upgrade pip
+          pip3 install buildozer cython
+
+      # تشغيل Buildozer لإنشاء ملف APK
       - name: Build APK
         run: |
-          export ANDROID_HOME=$HOME/.android/sdk
-          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
+          buildozer init
           buildozer -v android debug
 
+      # رفع ملف APK كـ Artifact
       - name: Upload APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
-          name: built-apk
+          name: KivyMD-App
           path: bin/*.apk
