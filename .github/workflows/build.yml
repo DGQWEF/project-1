@@ -37,7 +37,7 @@ jobs:
           
           mkdir -p $ANDROID_HOME/cmdline-tools
           cd $ANDROID_HOME/cmdline-tools
-          wget https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip -O sdk-tools.zip
+          wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O sdk-tools.zip
           unzip sdk-tools.zip
           mv cmdline-tools latest
           
@@ -47,9 +47,19 @@ jobs:
       # ✅ إصلاح مسار SDK Manager
       - name: Fix SDK Manager Path
         run: |
-          mkdir -p ~/.buildozer/android/platform/android-sdk
-          ln -sf $ANDROID_HOME ~/.buildozer/android/platform/android-sdk
+          mkdir -p ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin
+          ln -sf $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager
           echo "Fixed SDK Manager path."
+          
+      # ✅ التحقق من تثبيت `sdkmanager` بشكل صحيح
+      - name: Verify SDK Manager
+        run: |
+          if [ ! -f "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
+            echo "❌ SDK Manager is missing!"
+            exit 1
+          else
+            echo "✅ SDK Manager found!"
+          fi
 
       # ✅ تشغيل Buildozer لإنشاء ملف APK
       - name: Build APK
