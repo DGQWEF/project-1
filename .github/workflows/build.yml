@@ -12,7 +12,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # ✅ تثبيت Java 17 لحل مشكلة "UnsupportedClassVersionError"
+      # ✅ تثبيت Java 17
       - name: Install Java 17
         run: |
           sudo apt update
@@ -43,16 +43,16 @@ jobs:
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platform-tools" "platforms;android-31" "build-tools;33.0.2"
 
-      # ✅ إصلاح مشكلة "sdkmanager path does not exist"
-      - name: Fix sdkmanager Path
+      # ✅ إصلاح مسار AIDL يدويًا
+      - name: Fix AIDL Path
         run: |
           export ANDROID_HOME=$HOME/.android/sdk
           export BUILD_FOLDER=$HOME/.buildozer/android/platform/android-sdk
 
-          mkdir -p "$BUILD_FOLDER/tools/bin"
-          ln -sf "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "$BUILD_FOLDER/tools/bin/sdkmanager"
+          mkdir -p "$BUILD_FOLDER/build-tools/33.0.2"
+          ln -sf "$ANDROID_HOME/build-tools/33.0.2/aidl" "$BUILD_FOLDER/build-tools/33.0.2/aidl"
 
-          echo "Fixed sdkmanager path."
+          echo "Fixed AIDL path."
 
       # ✅ تشغيل Buildozer لإنشاء ملف APK
       - name: Build APK
