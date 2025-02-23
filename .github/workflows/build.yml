@@ -32,7 +32,7 @@ jobs:
       - name: Install Android SDK and build-tools
         run: |
           export ANDROID_HOME=$HOME/.android/sdk
-          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools/33.0.2:$PATH
           
           mkdir -p $ANDROID_HOME/cmdline-tools
           cd $ANDROID_HOME/cmdline-tools
@@ -42,6 +42,10 @@ jobs:
           
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platform-tools" "platforms;android-31" "build-tools;33.0.2"
+
+          # إصلاح المسار لـ AIDL
+          mkdir -p $ANDROID_HOME/build-tools/33.0.2
+          ln -s $ANDROID_HOME/cmdline-tools/latest/bin/aidl $ANDROID_HOME/build-tools/33.0.2/aidl
 
       # تشغيل Buildozer لإنشاء ملف APK
       - name: Build APK
