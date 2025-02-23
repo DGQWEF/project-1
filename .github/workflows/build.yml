@@ -6,41 +6,42 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # تثبيت الأدوات المطلوبة
-      - name: Install dependencies
+      # تثبيت Java 17
+      - name: Install Java 17
         run: |
           sudo apt update
-          sudo apt install -y python3-pip openjdk-17-jdk-headless unzip wget
+          sudo apt install -y openjdk-17-jdk
+          echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> $GITHUB_ENV
+          echo "/usr/lib/jvm/java-17-openjdk-amd64/bin" >> $GITHUB_PATH
+          java -version
 
-      # تثبيت Android SDK و Build-Tools مع القبول التلقائي للتراخيص
+      # تثبيت Buildozer ومتطلباته
+      - name: Install Buildozer dependencies
+        run: |
+          sudo apt install -y python3-pip unzip wget
+          pip3 install --upgrade pip
+          pip3 install buildozer cython
+
+      # تثبيت Android SDK و Build-Tools
       - name: Install Android SDK and build-tools
         run: |
-          mkdir -p $HOME/.android/sdk/cmdline-tools
-          cd $HOME/.android/sdk/cmdline-tools
+          export ANDROID_HOME=$HOME/.android/sdk
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
+          
+          mkdir -p $ANDROID_HOME/cmdline-tools
+          cd $ANDROID_HOME/cmdline-tools
           wget https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip -O sdk-tools.zip
           unzip sdk-tools.zip
           mv cmdline-tools latest
-          export ANDROID_HOME=$HOME/.android/sdk
-          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
-
-          # قبول التراخيص وتثبيت الأدوات المطلوبة
+          
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platform-tools" "platforms;android-31" "build-tools;33.0.2"
-
-          # تأكيد التثبيت
-          ls -la $ANDROID_HOME/build-tools/
-
-      # تثبيت Buildozer و Cython
-      - name: Install Buildozer
-        run: |
-          pip3 install --upgrade pip
-          pip3 install buildozer cython
 
       # تشغيل Buildozer لإنشاء ملف APK
       - name: Build APK
@@ -48,7 +49,7 @@ jobs:
           buildozer init
           buildozer -v android debug
 
-      # رفع ملف APK كـ Artifact باستخدام الإصدار الجديد
+      # رفع ملف APK كـ Artifact
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
