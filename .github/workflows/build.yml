@@ -52,16 +52,25 @@ jobs:
         run: |
           export ANDROID_HOME=$HOME/.android/sdk
           export BUILD_TOOLS_VERSION=33.0.2
+          export BUILD_TOOLS_PATH=$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION
           
-          # تأكد من وجود AIDL في build-tools
-          if [ -f "$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/aidl" ]; then
-            echo "AIDL already exists"
-          else
-            ln -sf $ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/aidl $ANDROID_HOME/platform-tools/aidl
+          # ✅ تأكد من وجود build-tools
+          if [ ! -d "$BUILD_TOOLS_PATH" ]; then
+            echo "Build-tools directory not found! Exiting..."
+            exit 1
           fi
 
-          # إضافة build-tools إلى المسار
-          export PATH=$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
+          # ✅ تأكد من وجود AIDL
+          if [ -f "$BUILD_TOOLS_PATH/aidl" ]; then
+            echo "AIDL already exists"
+          else
+            echo "Creating symbolic link for AIDL..."
+            ln -sf $BUILD_TOOLS_PATH/aidl $ANDROID_HOME/platform-tools/aidl
+          fi
+
+          # ✅ تأكد من أن build-tools في المسار
+          export PATH=$BUILD_TOOLS_PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
+          echo "Updated PATH: $PATH"
 
       # تشغيل Buildozer لإنشاء ملف APK
       - name: Build APK
