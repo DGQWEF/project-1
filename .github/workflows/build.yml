@@ -57,7 +57,10 @@ jobs:
       # تشغيل Buildozer لإنشاء ملف APK
       - name: Build APK
         run: |
+          export ANDROID_HOME=$HOME/.android/sdk
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools/33.0.2:$PATH
           buildozer -v android debug
+
 
       # رفع ملف APK كـ Artifact
       - name: Upload APK
