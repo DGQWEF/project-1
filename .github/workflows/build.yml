@@ -36,7 +36,6 @@ jobs:
 
       - name: Build with Buildozer
         uses: ArtemSBulgakov/buildozer-action@v1
-        id: buildozer
         with:
           command: android debug
           buildozer_version: stable
