@@ -44,16 +44,17 @@ jobs:
           # ✅ قبول جميع الرخص تلقائيًا
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
-          # ✅ تثبيت SDK الصحيح (تجنب 36-rc5)
+          # ✅ تثبيت SDK الصحيح بدون `rc`
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platform-tools" "platforms;android-31" "build-tools;$BUILD_TOOLS_VERSION"
 
-      # ✅ إصلاح مشكلة AIDL
+      # ✅ إصلاح مشكلة AIDL وضمان وجوده في المسار الصحيح
       - name: Fix AIDL Path
         run: |
           export ANDROID_HOME=$HOME/.android/sdk
           export BUILD_TOOLS_VERSION=33.0.2
           export BUILD_TOOLS_PATH=$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION
-          
+          export BUILD_FOLDER=$HOME/.buildozer/android/platform/android-sdk
+
           # ✅ تأكد من وجود build-tools
           if [ ! -d "$BUILD_TOOLS_PATH" ]; then
             echo "Build-tools directory not found! Exiting..."
@@ -62,11 +63,15 @@ jobs:
 
           # ✅ تأكد من وجود AIDL
           if [ -f "$BUILD_TOOLS_PATH/aidl" ]; then
-            echo "AIDL already exists"
+            echo "AIDL exists in build-tools."
           else
-            echo "Creating symbolic link for AIDL..."
-            ln -sf $BUILD_TOOLS_PATH/aidl $ANDROID_HOME/platform-tools/aidl
+            echo "AIDL not found! Exiting..."
+            exit 1
           fi
+
+          # ✅ إصلاح المسار عبر رابط رمزي
+          mkdir -p "$BUILD_FOLDER"
+          ln -sf "$ANDROID_HOME" "$BUILD_FOLDER"
 
           # ✅ تأكد من أن build-tools في المسار
           export PATH=$BUILD_TOOLS_PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
