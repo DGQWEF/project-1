@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # ✅ تنزيل الكود من المستودع
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -24,11 +25,11 @@ jobs:
       # ✅ تثبيت Buildozer ومتطلباته
       - name: Install Buildozer dependencies
         run: |
-          sudo apt install -y python3-pip unzip wget libffi-dev libssl-dev
+          sudo apt install -y python3-pip unzip wget
           pip3 install --upgrade pip
-          pip3 install buildozer cython virtualenv
+          pip3 install buildozer cython
 
-      # ✅ تثبيت Android SDK و Build-Tools مع القبول التلقائي للترخيص
+      # ✅ تثبيت Android SDK و Build-Tools
       - name: Install Android SDK and build-tools
         run: |
           export ANDROID_HOME=$HOME/.android/sdk
@@ -43,16 +44,12 @@ jobs:
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platform-tools" "platforms;android-31" "build-tools;33.0.2"
 
-      # ✅ إصلاح مسار AIDL يدويًا
-      - name: Fix AIDL Path
+      # ✅ إصلاح مسار SDK Manager
+      - name: Fix SDK Manager Path
         run: |
-          export ANDROID_HOME=$HOME/.android/sdk
-          export BUILD_FOLDER=$HOME/.buildozer/android/platform/android-sdk
-
-          mkdir -p "$BUILD_FOLDER/build-tools/33.0.2"
-          ln -sf "$ANDROID_HOME/build-tools/33.0.2/aidl" "$BUILD_FOLDER/build-tools/33.0.2/aidl"
-
-          echo "Fixed AIDL path."
+          mkdir -p ~/.buildozer/android/platform/android-sdk
+          ln -sf $ANDROID_HOME ~/.buildozer/android/platform/android-sdk
+          echo "Fixed SDK Manager path."
 
       # ✅ تشغيل Buildozer لإنشاء ملف APK
       - name: Build APK
@@ -64,4 +61,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: KivyMD-App
-          path: project-1/bin/*.apk
+          path: bin/*.apk
